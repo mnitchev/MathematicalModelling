@@ -1,0 +1,131 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <meta charset="utf-8" />
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <div id="resultSGraph" style="width:600px;height:600px;"></div>
+
+    <script>
+        resultSGraph = document.getElementById('resultSGraph');
+        var resultS = {
+            time: [],
+            S: []
+        };
+        var resultI = {
+            time: [],
+            I: []
+        }
+        var resultR = {
+            time: [],
+            R: []
+        }
+        function eulerMethod(beginingSusceptible, beginingInfected, alpha, beta, delta, steps){
+            var S = beginingSusceptible, I = beginingInfected, nextS = 0, nextI = 0;
+            var totalPopulation =  beginingSusceptible + beginingInfected;
+            for (var i = 1; i < steps; i+=delta){
+                //Calculate changes  
+                var newlyInfected = beta * S * I;
+                var dead = alpha * I;
+                var totalDead = totalPopulation - S - I;    
+
+                //Push current results
+                resultS.S.push(S);
+                resultS.time.push(i);
+                resultI.I.push(I);
+                resultI.time.push(i);
+                resultR.R.push(totalDead);
+                resultR.time.push(i);
+
+                //Calculate next results
+                nextS = S + delta * (-newlyInfected);
+                nextI = I + delta * (newlyInfected - dead);
+                S = nextS;
+                I = nextI;
+            }
+        }
+
+        var S0 = 254;
+        var Sn = 83;
+        var I0 = 7;
+        var totalPopulation = S0 + I0;
+        var alpha = 2.73;
+        var betaReal = 0.0178;
+        var delta = 0.001;
+        var steps = 8;
+        
+        var betaCalculated;
+        var R0;
+        var Imax;
+        var r;
+    
+        betaCalculated = (Math.log(S0) - Math.log(Sn)) * alpha  /  (totalPopulation - Sn);        
+        console.log("Calculated beta is : " + betaCalculated);
+        console.log("Real beta is : " + betaReal);
+
+        //Change between beta and betaReal
+        var beta = betaReal;
+        if(beta == betaReal){
+            console.log("USING REAL BETA");
+        }else{
+            console.log("USING CALCULATED BETA");
+        }
+
+        //Basic reproduction number calculation
+        R0 = beta * S0 / alpha;
+        console.log("Basic reproduction number : " + R0);
+        if(R0 > 1 ){
+            console.log("EPIDEMIC");
+        }else{
+            console.log("NO EPIDEMIC");
+        }
+
+        //Rough calculations
+        var roughR0 = (Math.log(S0) - Math.log(Sn)) / (1 - (Sn / totalPopulation));
+        r = alpha * (roughR0 - 1);
+        var roughBeta = (r + alpha) / totalPopulation;
+        console.log("Rough calculation of beta is : " + roughBeta);
+
+        //Maximum infected calculation  
+        var ratio = alpha / beta;
+        Imax = totalPopulation - ratio * Math.log(S0) - ratio + ratio * Math.log(ratio);
+        console.log("Calculated maximum value of infected is : " + Imax);
+
+        var c = I0 + S0 - ratio * Math.log(S0);
+        console.log("Constant is : " + c);
+        
+        var calculatedImax = c - ratio + ratio * Math.log(ratio);
+        console.log("Calculated maximum value of infected is : " + calculatedImax);
+
+        eulerMethod(S0, I0, alpha, beta , delta, steps);
+        var susceptibles = {
+            x: resultS.time,
+            y: resultS.S,
+            name: "Susceptibles"
+        };
+        var infected = {
+            x: resultI.time,
+            y: resultI.I,
+            name: "Infected"
+        };
+        var removed = {
+            x: resultR.time,
+            y: resultR.R,
+            name: "Died"
+        };
+        var data = [susceptibles, infected, removed];
+        var layout = {
+            title: 'Simulation of Eyam Plague data',
+            xaxis: {
+                title: 'Months',
+            },
+            yaxis: {
+                title: 'Number of people',
+            }
+        };
+        Plotly.newPlot('resultSGraph', data, layout);
+    </script>
+</body>
+</html>
