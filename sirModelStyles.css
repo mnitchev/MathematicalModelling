@@ -1,0 +1,15 @@
+.inputContainer{
+    width: 40%;
+    text-align: center;
+}
+
+.inputField{
+    background-color: rgb(55,55,55);
+    border: 1px solid #aaa;
+    color: #eee
+}
+
+.simulateButton{
+    position: relative;
+    margin: 15px;
+}
