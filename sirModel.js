@@ -108,7 +108,7 @@ function simulate() {
     var susceptibles = {
         x: resultS.time,
         y: resultS.S,
-        name: "Susceptibles",
+        name: "Susceptible",
         line: {
             color: '#fe9e00',//65, 138, 179
             width: 4
@@ -128,7 +128,7 @@ function simulate() {
     var removed = {
         x: resultR.time,
         y: resultR.R,
-        name: "Died",
+        name: "Removed",
         line: {
             color: '#df5327',
             width: 4
@@ -139,7 +139,7 @@ function simulate() {
     var layout = {
         title: 'SIR Simulation of an Epidemic',
         xaxis: {
-            title: 'Months',
+            title: 'Time',
         },
         yaxis: {
             title: 'Number of people',
