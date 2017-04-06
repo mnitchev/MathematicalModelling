@@ -137,7 +137,7 @@ function simulate() {
     };
     var data = [susceptibles, infected, removed];
     var layout = {
-        title: 'Simulation of Eyam Plague data',
+        title: 'SIR Simulation of an Epidemic',
         xaxis: {
             title: 'Months',
         },
