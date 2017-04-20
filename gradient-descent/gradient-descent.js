@@ -1,4 +1,4 @@
-var MAX_ITERATIONS = 100
+var MAX_ITERATIONS = 1000
 
 function f(x) {
     return Math.pow(x, 4)  - 3 * Math.pow(x, 3) +  2
