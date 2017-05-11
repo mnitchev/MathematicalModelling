@@ -1,6 +1,7 @@
 
 
 resultSGraph = document.getElementById('resultSGraph');
+
 var resultS = {
     time: [],
     S: []
@@ -13,6 +14,7 @@ var resultR = {
     time: [],
     R: []
 }
+
 function eulerMethod(beginingSusceptible, beginingInfected, alpha, beta, delta, steps) {
     var S = beginingSusceptible, I = beginingInfected, nextS = 0, nextI = 0;
     var totalPopulation = beginingSusceptible + beginingInfected;
@@ -102,7 +104,7 @@ function simulate() {
     var I0value = parseInt(document.getElementById('I0').value);
     var alphaValue = parseFloat(document.getElementById('alpha').value);
     var betaValue = parseFloat(document.getElementById('beta').value);
-    eulerMethod(S0value, I0value, alphaValue, betaValue, delta, steps);
+    eulerMethod(S0value, I0value, alphaValue, betaValue, 0.03225, 3.5161);
 
 
     var susceptibles = {
