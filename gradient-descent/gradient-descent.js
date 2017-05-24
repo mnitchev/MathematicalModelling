@@ -21,9 +21,13 @@ exports.gradientDescent = function(f, step, gamma,  precision, startingPoint) {
         current = previous - gamma * derivativePrevious
         var derivativeCurrent = derivative(f, current)
 
-        console.log("DERIVATIVE : " + derivativeCurrent)
+        console.log("DERIVATIVE : " + derivativeCurrent + " iteration: " + iterations)
 
         gamma = ((current - previous) * (derivativeCurrent - derivativePrevious))
+        var q = Math.pow(Math.abs(derivativeCurrent - derivativePrevious), 2);
+        if(q == 0){
+            break;
+        }
         gamma /= Math.pow(Math.abs(derivativeCurrent - derivativePrevious), 2)
         
         //console.log("gamma : " + gamma + " current : " + current + " previous :" + previous)

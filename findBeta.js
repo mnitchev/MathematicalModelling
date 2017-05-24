@@ -24,13 +24,15 @@ function smallestSquares(beta) {
     var alpha = 2.73
     var delta = 0.01
     var steps = realS.length
-    var sirResults = SIR.sirModel(S0, I0, alpha, beta, 0.03225, 3.5161)
+    var sirResults = SIR.sirModel(S0, I0, alpha, beta, 0.001, 3.5161)
+    var numberOfElements = sirResults.Svalues.length
     console.log(" BETA:" + beta)
     var sumS = 0
     var sumI = 0
     for (var i in realS) {
         if (realS[i] != -1) {
-            var dif = Math.pow((realS[i] - sirResults.Svalues[time[i]]), 2)
+            var index = Math.round(time[i]/109*(numberOfElements-1))
+            var dif = Math.pow((realS[i] - sirResults.Svalues[index]), 2)
             sumS += dif
         }
         // sumI += Math.pow(realI[i] - sirResults.Ivalues[i], 2)
@@ -43,10 +45,17 @@ function smallestSquaresDerivative(beta) {
     return (smallestSquares(beta + h) - smallestSquares(beta)) / h
 }
 
+function getBetaVecotor(){
+    for(var i = 0; i < 1; i += 0.01){
+
+    }
+}
+
 function findBeta() {
-    var betaCalculated = 0.01
+    var betaOptions = getBetaVecotor();
+    var betaCalculated = 0.026
     return gradientDescent.gradientDescent(smallestSquares,
-        254, 0.00000001, 0.0000000001, betaCalculated)
+        254, 0.00000001, 0.000000001, betaCalculated)
 }
 
 // var aa = SIR.sirModel(254, 7, 2.73, 0.0178, 0.00001, 5)
