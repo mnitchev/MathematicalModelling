@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 
 <head>
@@ -7,27 +7,28 @@
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
         crossorigin="anonymous">
-    <link rel="stylesheet" type="text/css" href="sirModelStyles.css">
+    <link rel="stylesheet" type="text/css" href="SIR-model/sirModelStyles.css">
 </head>
 
 <body style='background-color: #272525'>
     <div class='container inputContainer'>
         <form onsubmit={simulate(event)}>
-        <label for="S0" style="color: white">S0:</label>
-        <input type='text' name='S0' id='S0' class='form-control inputField' value="235">
-        <label for="I0" style="color: white">I0:</label>
-        <input type='text' name='I0' id='I0' class='form-control inputField' value="14.5">
-        <label for="alpha" style="color: white">Alpha:</label>
-        <input type='text' name='alpha' id='alpha' class='form-control inputField' value="2.73">
+        
         <label for="beta" style="color: white">Beta:</label>
         <input type='text' name='beta' id='beta' class='form-control inputField' value="0.0178">
         <button class='btn btn-danger simulateButton' onclick={simulate(event)}>Simulate</button>
+        <button class='btn btn-danger simulateButton' onclick={plotError(event)}>Plot error</button>
         </form>
     </div>
-    <div id="wrapper" style="text-align: center">
-        <div id="resultSGraph" align='center' hidden style="width:800px;height:600px;margin: auto;"></div>
+    <div id="dataResultsContainer">
     </div>
+    <div id="wrapper" style="text-align: center">
+        <div id="resultSGraph" align='center' hidden style="width:1200px;height:700px;margin: auto;"></div>
+    </div>
+    <script>
+
+    </script>
 </body>
-<script src="./sirModel.js"></script>
+<script src="./inSearchOfBeta.js"></script>
 
 </html>

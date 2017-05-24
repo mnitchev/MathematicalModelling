@@ -18,7 +18,7 @@ var resultR = {
 function eulerMethod(beginingSusceptible, beginingInfected, alpha, beta, delta, steps) {
     var S = beginingSusceptible, I = beginingInfected, nextS = 0, nextI = 0;
     var totalPopulation = beginingSusceptible + beginingInfected;
-    for (var i = 1; i < steps; i += delta) {
+    for (var i = 0; i < steps; i += delta) {
         //Calculate changes  
         var newlyInfected = beta * S * I;
         var dead = alpha * I;
@@ -92,8 +92,15 @@ console.log("Constant is : " + c);
 var calculatedImax = c - ratio + ratio * Math.log(ratio);
 console.log("Calculated maximum value of infected is : " + calculatedImax);
 
+var realS = [235/*3 July*/,
+    201/*19 July*/, 153.5/*3 Aug*/, 121/*19 Aug*/,
+    108/*3 Sep*/, 97/*19 Sep*/,  83/*20 Oct*/]
+// var time = [0, 16/31, 31/31, 47/31, 63/31, 79/31,  109/31]
+var realI = [14.5, 22, 29, 21, 8, 8, 0]
+var time = [0, 16*0.03225, 31*0.03225, 47*0.03225, 63*0.03225, 79*0.03225,  109*0.03225]
 
-function simulate() {
+function simulate(event) {
+    event.preventDefault();
     resultS.time = [];
     resultS.S = [];
     resultI.time = [];
@@ -106,7 +113,18 @@ function simulate() {
     var betaValue = parseFloat(document.getElementById('beta').value);
     eulerMethod(S0value, I0value, alphaValue, betaValue, 0.03225, 3.5161);
 
-
+    var realDataForSusceptibles = {
+        x: time,
+        y: realS,
+        name: "Real data for susceptibles",
+        type: 'line'
+    }
+    var realDataForInfected = {
+        x: time,
+        y: realI,
+        name: "Real data for infected",
+        type: 'line'
+    }
     var susceptibles = {
         x: resultS.time,
         y: resultS.S,
@@ -137,7 +155,7 @@ function simulate() {
         },
         type: 'spline'
     };
-    var data = [susceptibles, infected, removed];
+    var data = [susceptibles, infected, removed, realDataForInfected, realDataForSusceptibles];
     var layout = {
         title: 'SIR Simulation of an Epidemic',
         xaxis: {
