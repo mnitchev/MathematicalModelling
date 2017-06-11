@@ -1,7 +1,7 @@
 const green = '#76A4FB'
 const red = 'rgb(255, 0, 0)'
 const black = '#5E0000'
-const mapCoordinates = [{ x: -1, y: -1 }, { x: 0, y: -1 }, { x: 1, y: -1 }, { x: -1, y: 0 }, {x:0,y:0}, { x: 1, y: 0 }, { x: -1, y: 1 }, { x: 0, y: 1 }, { x: 1, y: 1 }]
+const mapCoordinates = [{ x: -1, y: -1 }, { x: 0, y: -1 }, { x: 1, y: -1 }, { x: -1, y: 0 }, { x: 0, y: 0 }, { x: 1, y: 0 }, { x: -1, y: 1 }, { x: 0, y: 1 }, { x: 1, y: 1 }]
 
 class Area {
     constructor(x, y, side) {
@@ -23,6 +23,8 @@ class Person {
         this.y = y
         this.state = state
         this.nextState = state
+        this.nextX = x
+        this.nextY = y
         this.immunizationPeriod = 0
         this.area = area
         this.movementProbabilityVector = [8]
@@ -37,11 +39,9 @@ class Person {
         }
     }
 
-
-
     move(x, y) {
-        this.x += x
-        this.y += y
+        this.nextX += x
+        this.nextY += y
     }
 
     getDestination() {
@@ -64,12 +64,27 @@ class Person {
         this.nextState = state
     }
 
+    setNextMovement() {
+        this.x = nextX
+        this.y = nextY
+    }
+
     updateState() {
         this.state = this.nextState
+        this.x = this.nextX
+        this.y = this.nextY
     }
 
     getX() {
         return this.x
+    }
+
+    getNextX() {
+        return this.nextX
+    }
+
+    getNextY() {
+        return this.nextY
     }
 
     getY() {
@@ -109,7 +124,7 @@ class World {
                 for (var j = area.x; j < area.x + area.side; j++) {
                     var willPopulate = _this.generateRandomNumber(100)
                     if (willPopulate < probabilityToSpawn) {
-                        _this.population[i][j] = new Person(j, i, 's', BlackHole)
+                        _this.population[i][j] = new Person(j, i, 's', _this.getRandomArea())
                     }
                 }
             }
@@ -117,7 +132,7 @@ class World {
     }
 
     getRandomArea() {
-        return this.areas[this.generateRandomNumber(this.areas.length - 1)]
+        return this.areas[this.generateRandomNumber(this.areas.length)]
     }
 
 
@@ -190,12 +205,12 @@ class World {
             }
         }
         var min = Math.min(...vector.filter(item => item != 0)) - 1
-        var newVector = vector.map(item => (item == 0 ? 0 : item-min))
+        var newVector = vector.map(item => (item == 0 ? 0 : item - min))
         var sum = (newVector.reduce((a, b) => a + b, 0))
-        if(sum == 0){
+        if (sum == 0) {
             return newVector
         }
-        return newVector.map(item =>(item / sum))
+        return newVector.map(item => (item / sum))
     }
 
     move(agent) {
@@ -212,9 +227,7 @@ class World {
                 leftRange += distance[i]
             }
         }
-        this.population[agent.getY()][agent.getX()] = this.population[agent.getY() + moveTo.y][agent.getX() + moveTo.x]
         agent.move(moveTo.x, moveTo.y)
-        this.population[agent.getY()][agent.getX()] = agent
 
     }
 
@@ -267,8 +280,10 @@ function drawPopulation() {
         for (var j = 0; j < 300; j++) {
             var agent = Azeroth.getPopulation()[i][j];
             if (!agent.isEmpty()) {
-
+                Azeroth.getPopulation()[agent.getY()][agent.getX()] = Azeroth.getPopulation()[agent.getNextY()][agent.getNextX()]
                 agent.updateState()
+                Azeroth.getPopulation()[agent.getY()][agent.getX()] = agent
+
                 canvasControl.fillStyle = getPersonColor(agent.getState())
 
                 canvasControl.beginPath()
@@ -318,9 +333,9 @@ var Pandaria = new Area(130, 100, 30);
 var EasternKingdoms = new Area(210, 60, 45);
 var BlackHole = new Area(150, 75, 1);
 var Azeroth = new World(300, 150, [Northrend, Kalimdor, Pandaria, EasternKingdoms]);
-Azeroth.populateAreas(60)
+Azeroth.populateAreas(20)
 Azeroth.defaultInfect(10)
-//loop();
-window.requestAnimationFrame(loopAnim)
+loop();
+//window.requestAnimationFrame(loopAnim)
 
 
