@@ -1,0 +1,31 @@
+Mathematical Modelling Report
+
+1. Introduction (in Epidemology)
+2. Mathematical background (methods used)
+  2.1. Euler method
+    2.1.1 Method details
+    2.1.2 Implementation
+    2.1.3 Examples
+  2.2. Gradient descent
+    2.2.1 Method details
+    2.2.2 Implementation
+    2.2.3 Examples
+  2.3. Least squares criterium
+    2.3.1 Criteruim details
+    2.3.2 Use cases
+3. SIR Model
+  3.1 Introduction to model - basic explanation, other models
+  3.2 Model details - how the model works, use of Euler method
+  3.3 Implementation details
+  3.4 Simulation and result data
+4. SIR Model Optimisation - finding best fit for beta
+ 4.1 Introduction to problem
+ 4.2 Problem solution - methods used and how
+ 4.3 Implementation details
+ 4.4 Simulation examples using software, result analysis
+5. Cellular Automata SIR Model
+  5.1 Introduction to model
+  5.2 Model details - translation from SIR to cellular automata
+  5.3 Simulation and results
+  5.4 Complex cellular automata (if implemented)
+6. Conclusion
