@@ -23,8 +23,6 @@ class Person {
         this.y = y
         this.state = state
         this.nextState = state
-        this.nextX = x
-        this.nextY = y
         this.immunizationPeriod = 0
         this.area = area
         this.movementProbabilityVector = [8]
@@ -39,9 +37,13 @@ class Person {
         }
     }
 
+    isInArea(){
+        return Math.sqrt(Math.pow(this.x - this.area.getCenter().x, 2) + Math.pow(this.y - this.area.getCenter().y, 2)) < 15
+    }
+
     move(x, y) {
-        this.nextX += x
-        this.nextY += y
+        this.x += x
+        this.y += y
     }
 
     getDestination() {
@@ -64,27 +66,12 @@ class Person {
         this.nextState = state
     }
 
-    setNextMovement() {
-        this.x = nextX
-        this.y = nextY
-    }
-
     updateState() {
         this.state = this.nextState
-        this.x = this.nextX
-        this.y = this.nextY
     }
 
     getX() {
         return this.x
-    }
-
-    getNextX() {
-        return this.nextX
-    }
-
-    getNextY() {
-        return this.nextY
     }
 
     getY() {
@@ -119,12 +106,15 @@ class World {
 
     populateAreas(probabilityToSpawn) {
         var _this = this;
-        this.areas.forEach(function (area) {
+        this.areas.forEach(area => {
             for (var i = area.y; i < area.y + area.side; i++) {
                 for (var j = area.x; j < area.x + area.side; j++) {
-                    var willPopulate = _this.generateRandomNumber(100)
+                    var willPopulate = this.generateRandomNumber(100)
                     if (willPopulate < probabilityToSpawn) {
-                        _this.population[i][j] = new Person(j, i, 's', _this.getRandomArea())
+                        this.population[i][j] = new Person(j, i, 's', area)
+                        if (5 > this.generateRandomNumber(100)) {
+                            this.population[i][j].setArea(this.getRandomArea())
+                        }
                     }
                 }
             }
@@ -227,11 +217,17 @@ class World {
                 leftRange += distance[i]
             }
         }
+        this.population[agent.getY()][agent.getX()] = this.population[agent.getY() + moveTo.y][agent.getX() + moveTo.x]
         agent.move(moveTo.x, moveTo.y)
+        this.population[agent.getY()][agent.getX()] = agent
 
     }
 
-    update(probability, radius, probabilityR, immunizationPeriod) {
+    willTransfer(probability){
+        return Math.random() < probability
+    }
+
+    update(probability, radius, probabilityR, immunizationPeriod, probabilityToTransfer) {
         for (var i = 0; i < 150; i++) {
             for (var j = 0; j < 300; j++) {
                 var agent = this.population[i][j]
@@ -247,6 +243,9 @@ class World {
                     }
                     if (agent.getState() == 'r') {
                         agent.updateImmunizationPeriod()
+                    }
+                    if (agent.isInArea() && this.willTransfer(probabilityToTransfer)){
+                        agent.setArea(this.getRandomArea())
                     }
                 }
             }
@@ -280,10 +279,8 @@ function drawPopulation() {
         for (var j = 0; j < 300; j++) {
             var agent = Azeroth.getPopulation()[i][j];
             if (!agent.isEmpty()) {
-                Azeroth.getPopulation()[agent.getY()][agent.getX()] = Azeroth.getPopulation()[agent.getNextY()][agent.getNextX()]
-                agent.updateState()
-                Azeroth.getPopulation()[agent.getY()][agent.getX()] = agent
 
+                agent.updateState()
                 canvasControl.fillStyle = getPersonColor(agent.getState())
 
                 canvasControl.beginPath()
@@ -297,19 +294,19 @@ function drawPopulation() {
 
 
 //PROBABILITIES - HAVE FUN WITH THEM:
-var infectionProbability = 0.15
-var removeProbability = 0.12
+var infectionProbability = 0.01
+var removeProbability = 0.01
 
 function loop() {//WOODEN
     setInterval(function () {
-        Azeroth.update(infectionProbability, 2, removeProbability, 40)
+        Azeroth.update(infectionProbability, 2, removeProbability, 90, 0.002)
         draw()
     }, 1000 / 30)
 }
 
 function loopAnim() {
     draw()
-    Azeroth.update(infectionProbability, 2, removeProbability, 40)
+    Azeroth.update(infectionProbability, 2, removeProbability, 90, 0.02)
     window.requestAnimationFrame(loopAnim)
 }
 
@@ -327,14 +324,13 @@ var canvas = document.getElementById('canvas');
 var canvasControl = canvas.getContext('2d');
 canvasControl.fillStyle = '#000000';
 canvasControl.fillRect(0, 0, canvas.width, canvas.height);
-var Northrend = new Area(125, 10, 35);
+var Northrend = new Area(225, 10, 35);
 var Kalimdor = new Area(10, 60, 50);
-var Pandaria = new Area(130, 100, 30);
-var EasternKingdoms = new Area(210, 60, 45);
-var BlackHole = new Area(150, 75, 1);
-var Azeroth = new World(300, 150, [Northrend, Kalimdor, Pandaria, EasternKingdoms]);
-Azeroth.populateAreas(20)
-Azeroth.defaultInfect(10)
+var Pandaria = new Area(200, 120, 30);
+//var EasternKingdoms = new Area(210, 60, 45);
+var Azeroth = new World(300, 150, [Northrend, Kalimdor, Pandaria]);
+Azeroth.populateAreas(25)
+Azeroth.defaultInfect(1)
 loop();
 //window.requestAnimationFrame(loopAnim)
 
