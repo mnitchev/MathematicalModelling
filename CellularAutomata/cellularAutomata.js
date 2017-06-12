@@ -1,6 +1,7 @@
-const green = '#76A4FB'
-const red = 'rgb(255, 0, 0)'
-const black = '#5E0000'
+const susceptibleColor = '#42f4a1'
+const infectedColor = '#ff2911'
+const removedColor = '#631d14'
+const backgroundColor = '#211f1f'
 const mapCoordinates = [{ x: -1, y: -1 }, { x: 0, y: -1 }, { x: 1, y: -1 }, { x: -1, y: 0 }, { x: 0, y: 0 }, { x: 1, y: 0 }, { x: -1, y: 1 }, { x: 0, y: 1 }, { x: 1, y: 1 }]
 
 class Area {
@@ -91,11 +92,17 @@ class EmptySpace {
 }
 
 class World {
-    constructor(width, height, areas) {
+    constructor(width, height, areas, diseaseConfiguration) {
         this.width = width
         this.height = height
         this.population = []
         this.areas = areas
+        this.updateDir = 0
+        this.infectionProbability = diseaseConfiguration.infectionProbability
+        this.infectRadius = diseaseConfiguration.infectRadius
+        this.recoverProbability = diseaseConfiguration.recoverProbability
+        this.immunizationPeriod = diseaseConfiguration.immunizationPeriod
+        this.probabilityToMove = diseaseConfiguration.probabilityToMove
         for (var i = 0; i < height; i++) {
             this.population.push(new Array())
             for (var j = 0; j < width; j++) {
@@ -112,9 +119,6 @@ class World {
                     var willPopulate = this.generateRandomNumber(100)
                     if (willPopulate < probabilityToSpawn) {
                         this.population[i][j] = new Person(j, i, 's', area)
-                        if (5 > this.generateRandomNumber(100)) {
-                            this.population[i][j].setArea(this.getRandomArea())
-                        }
                     }
                 }
             }
@@ -125,7 +129,13 @@ class World {
         return this.areas[this.generateRandomNumber(this.areas.length)]
     }
 
-
+    changeDir(){
+      if(this.updateDir == 4){
+        this.updateDir = 0
+      } else{
+        this.updateDir++
+      }
+    }
 
 
 
@@ -148,10 +158,10 @@ class World {
         return true
     }
 
-    getNeighbouringInfectedCells(y, x, radius) {
+    getNeighbouringInfectedCells(y, x) {
         var infNeighbours = 0
-        for (var i = -radius; i <= radius; i++) {
-            for (var j = -radius; j <= radius; j++) {
+        for (var i = -this.infectRadius; i <= this.infectRadius; i++) {
+            for (var j = -this.infectRadius; j <= this.infectRadius; j++) {
                 if (this.isInWorld(x + j, y + i) && (i != 0 || j != 0)) {
                     if (!this.population[y + i][x + j].isEmpty() && this.population[y + i][x + j].getState() == 'i') {
                         infNeighbours++
@@ -162,15 +172,15 @@ class World {
         return infNeighbours
     }
 
-    willInfect(probability, surroundingCells) {
+    willInfect(surroundingCells) {
         var rand = Math.random()
-        var modelProbabilityForInfection = 1 - Math.pow((1 - probability), surroundingCells)
+        var modelProbabilityForInfection = 1 - Math.pow((1 - this.infectionProbability), surroundingCells)
         return rand < modelProbabilityForInfection
     }
 
-    willRecover(probability) {
+    willRecover() {
         var rand = Math.random()
-        if (rand < probability) {
+        if (rand < this.recoverProbability) {
             return true
         }
         return false
@@ -185,7 +195,7 @@ class World {
         var vector = []
         for (var i = -1; i <= 1; i++) {
             for (var j = -1; j <= 1; j++) {
-                if (this.isInWorld(agent.getX() + j, agent.getY() + i) && (i != 0 || j != 0) && this.population[agent.getY() + i][agent.getX() + j].isEmpty()) {
+                if (this.isInWorld(agent.getX() + j, agent.getY() + i) && ((j == 0 && i ==0) || this.population[agent.getY() + i][agent.getX() + j].isEmpty())) {
                     var surroundingCellsDistance = Math.sqrt(Math.pow(agent.getDestination().x - agent.getX() + j, 2) + Math.pow(agent.getDestination().y - agent.getY() + i, 2))
                     vector.push(surroundingCellsDistance)
                 }
@@ -223,35 +233,80 @@ class World {
 
     }
 
-    willTransfer(probability){
-        return Math.random() < probability
+    willTransfer(){
+        return Math.random() < this.probabilityToMove
     }
 
-    update(probability, radius, probabilityR, immunizationPeriod, probabilityToTransfer) {
-        for (var i = 0; i < 150; i++) {
-            for (var j = 0; j < 300; j++) {
-                var agent = this.population[i][j]
-                if (!agent.isEmpty()) {
-                    var neighbours = this.getNeighbouringInfectedCells(i, j, radius)
-                    this.move(agent)
-                    if (agent.getState() == 's' && this.willInfect(probability, neighbours)) {
-                        agent.setNextState('i')
-                    }
-                    if (agent.getState() == 'i' && this.willRecover(probabilityR)) {
-                        agent.setNextState('r')
-                        agent.setImmunizationPeriod(immunizationPeriod)
-                    }
-                    if (agent.getState() == 'r') {
-                        agent.updateImmunizationPeriod()
-                    }
-                    if (agent.isInArea() && this.willTransfer(probabilityToTransfer)){
-                        agent.setArea(this.getRandomArea())
-                    }
-                }
-            }
+    update(){
+        switch (this.updateDir) {
+          case 0:
+            this.updateLeftUp();
+            break;
+          case 1:
+            this.updateRightUp();
+            break;
+          case 2:
+            this.updateRightDown()
+            break;
+          case 3:
+            this.updateLeftDown()
+            break;
         }
+        this.changeDir();
     }
 
+    updateLeftUp(){
+      for(var i = 0; i < this.height; i++){
+        for(var j = 0; j < this.width; j++){
+          this.updateAgent(i, j)
+        }
+      }
+    }
+
+    updateRightUp(){
+      for(var i = 0; i < this.height; i++){
+        for(var j = this.width - 1; j >= 0; j--){
+          this.updateAgent(i, j)
+        }
+      }
+    }
+
+    updateRightDown(){
+      for(var i = this.height - 1; i >= 0; i--){
+        for(var j = this.width - 1; j >= 0; j--){
+          this.updateAgent(i, j)
+        }
+      }
+    }
+
+    updateLeftDown(){
+      for(var i = this.height - 1; i >= 0; i--){
+        for(var j = 0; j < this.width; j++){
+          this.updateAgent(i, j)
+        }
+      }
+    }
+
+    updateAgent(i, j){
+      var agent = this.population[i][j]
+      if (!agent.isEmpty()) {
+          var neighbours = this.getNeighbouringInfectedCells(i, j, this.infectRadius)
+          this.move(agent)
+          if (agent.getState() == 's' && this.willInfect(neighbours)) {
+              agent.setNextState('i')
+          }
+          if (agent.getState() == 'i' && this.willRecover()) {
+              agent.setNextState('r')
+              agent.setImmunizationPeriod(this.immunizationPeriod)
+          }
+          if (agent.getState() == 'r') {
+              agent.updateImmunizationPeriod()
+          }
+          if (agent.isInArea() && this.willTransfer()){
+              agent.setArea(this.getRandomArea())
+          }
+    }
+  }
 
     generateRandomNumber(max) {
         return Math.floor((Math.random() * max));
@@ -261,20 +316,17 @@ class World {
 
 function getPersonColor(state) {
     if (state == 's') {
-        return green;
+        return susceptibleColor;
     }
     if (state == 'i') {
-        return red;
+        return infectedColor;
     }
     if (state == 'r') {
-        return black;
+        return removedColor;
     }
 }
 
-
-
 function drawPopulation() {
-
     for (var i = 0; i < 150; i++) {
         for (var j = 0; j < 300; j++) {
             var agent = Azeroth.getPopulation()[i][j];
@@ -292,46 +344,52 @@ function drawPopulation() {
     }
 }
 
-
-//PROBABILITIES - HAVE FUN WITH THEM:
-var infectionProbability = 0.01
-var removeProbability = 0.01
-
 function loop() {//WOODEN
     setInterval(function () {
-        Azeroth.update(infectionProbability, 2, removeProbability, 90, 0.002)
+        Azeroth.update()
         draw()
     }, 1000 / 30)
 }
 
 function loopAnim() {
     draw()
-    Azeroth.update(infectionProbability, 2, removeProbability, 90, 0.02)
+    Azeroth.update()
     window.requestAnimationFrame(loopAnim)
 }
 
-
 function draw() {
     canvasControl.clearRect(0, 0, canvas.width, canvas.height)
-    canvasControl.fillStyle = '#000000';
+    canvasControl.fillStyle = backgroundColor;
     canvasControl.fillRect(0, 0, canvas.width, canvas.height);
     drawPopulation()
 }
 
-
+//PROBABILITIES - HAVE FUN WITH THEM:
+var infectionProbability = 0.005
+var removeProbability = 0.01
+var infectRad = 3
+var immunePeriod = 90
+var moveProb = 0.002
+//***********************************
 
 var canvas = document.getElementById('canvas');
 var canvasControl = canvas.getContext('2d');
 canvasControl.fillStyle = '#000000';
 canvasControl.fillRect(0, 0, canvas.width, canvas.height);
-var Northrend = new Area(225, 10, 35);
-var Kalimdor = new Area(10, 60, 50);
-var Pandaria = new Area(200, 120, 30);
-//var EasternKingdoms = new Area(210, 60, 45);
-var Azeroth = new World(300, 150, [Northrend, Kalimdor, Pandaria]);
-Azeroth.populateAreas(25)
+var diseaseConfiguration = {
+  infectionProbability : infectionProbability,
+  infectRadius : infectRad,
+  recoverProbability : removeProbability,
+  immunizationPeriod : immunePeriod,
+  probabilityToMove : moveProb,
+}
+
+var Northrend = new Area(100, 15, 50);
+var Kalimdor = new Area(50, 60, 60);
+var Pandaria = new Area(100, 120, 30);
+var EasternKingdoms = new Area(190, 60, 45);
+var Azeroth = new World(300, 150, [Northrend, Kalimdor, Pandaria, EasternKingdoms], diseaseConfiguration);
+Azeroth.populateAreas(50)
 Azeroth.defaultInfect(1)
-loop();
-//window.requestAnimationFrame(loopAnim)
-
-
+// loop();
+window.requestAnimationFrame(loopAnim)
