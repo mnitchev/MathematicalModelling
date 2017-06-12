@@ -272,7 +272,7 @@ class CityPopulation {
                 var index = this.infected.indexOf(individual)
                 this.infected.splice(index, 1)
                 individual.setState('r')
-                individual.setImmunizationPeriod(50)
+                individual.setImmunizationPeriod(40)
             }
             if (individual.getState() == 'r') {
                 individual.updateImmunizationPeriod()
