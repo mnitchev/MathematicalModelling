@@ -196,8 +196,8 @@ class World {
         for (var i = -1; i <= 1; i++) {
             for (var j = -1; j <= 1; j++) {
                 if (this.isInWorld(agent.getX() + j, agent.getY() + i) && ((j == 0 && i ==0) || this.population[agent.getY() + i][agent.getX() + j].isEmpty())) {
-                    var surroundingCellsDistance = Math.sqrt(Math.pow(agent.getDestination().x - agent.getX() + j, 2) + Math.pow(agent.getDestination().y - agent.getY() + i, 2))
-                    vector.push(surroundingCellsDistance)
+                    var surroundingCellDistance = Math.sqrt(Math.pow(agent.getDestination().x - agent.getX() + j, 2) + Math.pow(agent.getDestination().y - agent.getY() + i, 2))
+                    vector.push(surroundingCellDistance)
                 }
                 else {
                     vector.push(0)
@@ -365,11 +365,11 @@ function draw() {
 }
 
 //PROBABILITIES - HAVE FUN WITH THEM:
-var infectionProbability = 0.005
-var removeProbability = 0.01
+var infectionProbability = 0.05
+var removeProbability = 0.04
 var infectRad = 3
-var immunePeriod = 90
-var moveProb = 0.002
+var immunePeriod = 20
+var moveProb = 0.0009
 //***********************************
 
 var canvas = document.getElementById('canvas');
@@ -385,10 +385,14 @@ var diseaseConfiguration = {
 }
 
 var Northrend = new Area(100, 15, 50);
-var Kalimdor = new Area(50, 60, 60);
+var Kalimdor = new Area(50, 60, 50);
 var Pandaria = new Area(100, 120, 30);
 var EasternKingdoms = new Area(190, 60, 45);
-var Azeroth = new World(300, 150, [Northrend, Kalimdor, Pandaria, EasternKingdoms], diseaseConfiguration);
+var BroakenIsles = new Area(240, 10, 35);
+var Outland = new Area(10, 10, 25)
+var Draenor = new Area(10, 120, 20)
+var Maelstorm = new Area(240, 120, 20)
+var Azeroth = new World(300, 150, [Northrend, Kalimdor, Pandaria, EasternKingdoms, BroakenIsles, Outland, Draenor, Maelstorm], diseaseConfiguration);
 Azeroth.populateAreas(50)
 Azeroth.defaultInfect(1)
 // loop();
